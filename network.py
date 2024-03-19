@@ -7,22 +7,27 @@ import numpy as np
 
 
 class TwoLayerClassifier:
-    def __init__(self, input_dim=28*28, hidden_dim=64, output_dim=10, batch_size=100):
+    def __init__(self, input_dim=28*28, hidden_dim=64, output_dim=10, batch_size=100, dropout_rate = 0.25):
         # Attributes need to be aligned with the skeleton code provided in the train method
         self.layer1 = {}
         self.layer2 = {}
         
         # Initialize weights and biases for layer1 and layer2
-        self.layer1['W'] = torch.randn(input_dim, hidden_dim) * np.sqrt(3. / input_dim)
+        self.layer1['W'] = torch.randn(input_dim, hidden_dim) * np.sqrt(1. / input_dim)
         self.layer1['b'] = torch.zeros(hidden_dim)
         self.layer2['W'] = torch.randn(hidden_dim, output_dim) * np.sqrt(1. / hidden_dim)
         self.layer2['b'] = torch.zeros(output_dim)
         
         self.batch_size = batch_size
+        self.dropout_rate = dropout_rate
 
-    def forward(self, X):
+    def forward(self, X, is_training=True):
         self.z1 = torch.matmul(X, self.layer1['W']) + self.layer1['b']
         self.a1 = torch.sigmoid(self.z1)  
+        
+        if is_training:
+            self.a1 = F.dropout(self.a1,p=self.dropout_rate)
+        
         z2 = torch.matmul(self.a1, self.layer2['W']) + self.layer2['b']
         return F.softmax(z2, dim=1)
 
